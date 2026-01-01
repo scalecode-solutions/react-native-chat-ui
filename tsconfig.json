@@ -1,18 +1,27 @@
 {
+  "extends": "@react-native/typescript-config/tsconfig.json",
   "compilerOptions": {
     "declaration": true,
+    "declarationMap": true,
     "esModuleInterop": true,
-    "jsx": "react",
-    "lib": ["ESNext"],
+    "jsx": "react-jsx",
+    "lib": ["ES2023"],
     "module": "ESNext",
-    "moduleResolution": "Node",
+    "moduleResolution": "Bundler",
+    "noEmit": false,
     "noEmitOnError": true,
     "outDir": "./lib",
     "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,
-    "target": "ES2018",
+    "target": "ES2022",
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "resolveJsonModule": true,
+    "allowImportingTsExtensions": false,
+    "allowArbitraryExtensions": false
   },
-  "exclude": ["**/__tests__/*"],
+  "exclude": ["**/__tests__/*", "node_modules", "lib"],
   "include": ["src"]
 }
