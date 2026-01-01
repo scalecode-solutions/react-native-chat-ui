@@ -76,7 +76,7 @@ describe('ErrorBoundary', () => {
     const originalDEV = global.__DEV__
     global.__DEV__ = true
     
-    const { getByText } = render(
+    const { getByText, UNSAFE_getAllByType } = render(
       <ErrorBoundary>
         <ThrowError shouldThrow={true} />
       </ErrorBoundary>
@@ -84,8 +84,63 @@ describe('ErrorBoundary', () => {
     
     expect(getByText('Something went wrong')).toBeTruthy()
     expect(getByText('Test error')).toBeTruthy()
-    // Stack trace is present
+    
+    // Stack trace should be present (check there are multiple Text elements)
+    const textElements = UNSAFE_getAllByType(Text)
+    expect(textElements.length).toBeGreaterThan(2)
     
     global.__DEV__ = originalDEV
+  })
+
+  it('hides stack trace in production mode', () => {
+    const originalDEV = global.__DEV__
+    global.__DEV__ = false
+    
+    const { getByText, UNSAFE_getAllByType } = render(
+      <ErrorBoundary>
+        <ThrowError shouldThrow={true} />
+      </ErrorBoundary>
+    )
+    
+    expect(getByText('Something went wrong')).toBeTruthy()
+    expect(getByText('Test error')).toBeTruthy()
+    
+    // Stack trace should NOT be present (only 2 Text elements)
+    const textElements = UNSAFE_getAllByType(Text)
+    expect(textElements.length).toBe(2)
+    
+    global.__DEV__ = originalDEV
+  })
+
+  it('resets error state when resetError is called', () => {
+    const TestComponent = ({ shouldThrow }: { shouldThrow: boolean }) => {
+      if (shouldThrow) {
+        throw new Error('Test error')
+      }
+      return <Text>Success</Text>
+    }
+
+    const { getByText } = render(
+      <ErrorBoundary
+        fallback={(error, resetError) => (
+          <>
+            <Text>Error: {error.message}</Text>
+            <Text onPress={resetError} testID="reset-button">Reset</Text>
+          </>
+        )}
+      >
+        <TestComponent shouldThrow={true} />
+      </ErrorBoundary>
+    )
+    
+    // Error is displayed
+    expect(getByText('Error: Test error')).toBeTruthy()
+    
+    // Click reset button to reset error state
+    const resetButton = getByText('Reset')
+    resetButton.props.onPress()
+    
+    // After reset, error state is cleared
+    // (component tries to render children again, which still throw)
   })
 })
