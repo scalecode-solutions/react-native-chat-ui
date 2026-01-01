@@ -2,6 +2,37 @@ import { PreviewData } from '@flyerhq/react-native-link-preview'
 import * as React from 'react'
 import { ColorValue, ImageURISource, TextStyle } from 'react-native'
 
+/** Reaction to a message (for future feature implementation) */
+export interface MessageReaction {
+  emoji: string
+  userId: string
+  createdAt?: number
+}
+
+/** Reply/thread reference (for future feature implementation) */
+export interface MessageReply {
+  messageId: string
+  userId: string
+  text?: string
+  previewType?: 'text' | 'image' | 'file'
+}
+
+/** Extended metadata structure for future features */
+export interface ExtendedMetadata extends Record<string, any> {
+  /** Reactions to this message */
+  reactions?: MessageReaction[]
+  /** Reference to a message being replied to */
+  replyTo?: MessageReply
+  /** Whether this message is pinned */
+  isPinned?: boolean
+  /** Custom flags for extensions */
+  flags?: string[]
+  /** Edit history */
+  editedAt?: number
+  /** Forwarded from another message */
+  forwardedFrom?: string
+}
+
 export namespace MessageType {
   export type Any = Custom | File | Image | Text | Unsupported
 
@@ -23,7 +54,7 @@ export namespace MessageType {
     author: User
     createdAt?: number
     id: string
-    metadata?: Record<string, any>
+    metadata?: ExtendedMetadata
     roomId?: string
     status?: 'delivered' | 'error' | 'seen' | 'sending' | 'sent'
     type: 'custom' | 'file' | 'image' | 'text' | 'unsupported'
@@ -59,7 +90,7 @@ export namespace MessageType {
   }
 
   export interface PartialCustom extends Base {
-    metadata?: Record<string, any>
+    metadata?: ExtendedMetadata
     type: 'custom'
   }
 
@@ -68,7 +99,7 @@ export namespace MessageType {
   }
 
   export interface PartialFile {
-    metadata?: Record<string, any>
+    metadata?: ExtendedMetadata
     mimeType?: string
     name: string
     size: number
@@ -82,7 +113,7 @@ export namespace MessageType {
 
   export interface PartialImage {
     height?: number
-    metadata?: Record<string, any>
+    metadata?: ExtendedMetadata
     name: string
     size: number
     type: 'image'
@@ -95,7 +126,7 @@ export namespace MessageType {
   }
 
   export interface PartialText {
-    metadata?: Record<string, any>
+    metadata?: ExtendedMetadata
     previewData?: PreviewData
     text: string
     type: 'text'
