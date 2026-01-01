@@ -12,9 +12,20 @@ export interface MessageReaction {
 /** Reply/thread reference (for future feature implementation) */
 export interface MessageReply {
   messageId: string
+  messagePreview: string
+}
+
+/** Typing indicator state */
+export interface TypingUser {
   userId: string
-  text?: string
-  previewType?: 'text' | 'image' | 'file'
+  userName?: string
+}
+
+/** Read receipt information */
+export interface ReadReceipt {
+  userId: string
+  userName?: string
+  readAt: number
 }
 
 /** Extended metadata structure for future features */
@@ -31,6 +42,8 @@ export interface ExtendedMetadata extends Record<string, any> {
   editedAt?: number
   /** Forwarded from another message */
   forwardedFrom?: string
+  /** Read receipts for this message */
+  readReceipts?: ReadReceipt[]
 }
 
 export namespace MessageType {
@@ -226,4 +239,6 @@ export interface User {
   metadata?: Record<string, any>
   role?: 'admin' | 'agent' | 'moderator' | 'user'
   updatedAt?: number
+  /** Whether user is currently online */
+  isOnline?: boolean
 }

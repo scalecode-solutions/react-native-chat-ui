@@ -12,6 +12,7 @@ import { Avatar } from '../Avatar'
 import { FileMessage } from '../FileMessage'
 import { ImageMessage } from '../ImageMessage'
 import { MessageReactions } from '../MessageReactions'
+import { ReadReceipts } from '../ReadReceipts'
 import { StatusIcon } from '../StatusIcon'
 import { TextMessage, TextMessageTopLevelProps } from '../TextMessage'
 import styles from './styles'
@@ -23,6 +24,10 @@ export interface MessageTopLevelProps extends TextMessageTopLevelProps {
   onMessagePress?: (message: MessageType.Any) => void
   /** Called when user taps on a reaction */
   onReactionPress?: (message: MessageType.Any, emoji: string) => void
+  /** Called when user taps on read receipts */
+  onReadReceiptsPress?: (message: MessageType.Any) => void
+  /** Show read receipts under messages */
+  showReadReceipts?: boolean
   /** Customize the default bubble using this function. `child` is a content
    * you should render inside your bubble, `message` is a current message
    * (contains `author` inside) and `nextMessageInGroup` allows you to see
@@ -76,10 +81,12 @@ export const Message = React.memo(
     enableAnimation,
     message,
     messageWidth,
-    onMessagePress,
     onMessageLongPress,
+    onMessagePress,
     onPreviewDataFetched,
     onReactionPress,
+    onReadReceiptsPress,
+    showReadReceipts,
     renderBubble,
     renderCustomMessage,
     renderFileMessage,
@@ -214,6 +221,21 @@ export const Message = React.memo(
               }
             />
           )}
+          {currentUserIsAuthor &&
+            showReadReceipts &&
+            message.metadata?.readReceipts &&
+            message.metadata.readReceipts.length > 0 && (
+              <ReadReceipts
+                receipts={message.metadata.readReceipts}
+                showTimestamp={true}
+                onPress={
+                  onReadReceiptsPress
+                    ? () =>
+                        onReadReceiptsPress(excludeDerivedMessageProps(message))
+                    : undefined
+                }
+              />
+            )}
         </View>
         <StatusIcon
           {...{

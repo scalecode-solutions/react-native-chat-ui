@@ -24,7 +24,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { usePrevious } from '../../hooks'
 import { l10n } from '../../l10n'
 import { defaultTheme } from '../../theme'
-import { MessageType, Theme, User } from '../../types'
+import { MessageType, Theme, TypingUser, User } from '../../types'
 import {
   calculateChatMessages,
   initLocale,
@@ -36,6 +36,7 @@ import {
 import { CircularActivityIndicator } from '../CircularActivityIndicator'
 import { Input, InputAdditionalProps, InputTopLevelProps } from '../Input'
 import { Message, MessageTopLevelProps } from '../Message'
+import { TypingIndicator } from '../TypingIndicator'
 import ImageView from './ImageView'
 import styles from './styles'
 
@@ -99,6 +100,8 @@ export interface ChatProps extends ChatTopLevelProps {
    * @see {@link ChatProps.customDateHeaderText} for more customization.
    */
   timeFormat?: string
+  /** List of users currently typing */
+  typingUsers?: TypingUser[]
   user: User
 }
 
@@ -122,6 +125,8 @@ export const Chat = ({
   onMessageLongPress,
   onMessagePress,
   onPreviewDataFetched,
+  onReadReceiptsPress,
+  onReactionPress,
   onSendPress,
   renderBubble,
   renderCustomMessage,
@@ -129,11 +134,13 @@ export const Chat = ({
   renderImageMessage,
   renderTextMessage,
   sendButtonVisibilityMode = 'editing',
+  showReadReceipts,
   showUserAvatars = false,
   showUserNames = false,
   textInputProps,
   theme = defaultTheme,
   timeFormat,
+  typingUsers = [],
   usePreviewData = true,
   user,
 }: ChatProps) => {
@@ -303,6 +310,8 @@ export const Chat = ({
             onMessageLongPress,
             onMessagePress: handleMessagePress,
             onPreviewDataFetched,
+            onReactionPress,
+            onReadReceiptsPress,
             renderBubble,
             renderCustomMessage,
             renderFileMessage,
@@ -311,6 +320,7 @@ export const Chat = ({
             roundBorder,
             showAvatar,
             showName,
+            showReadReceipts,
             showStatus,
             showUserAvatars,
             usePreviewData,
@@ -323,11 +333,14 @@ export const Chat = ({
       handleMessagePress,
       onMessageLongPress,
       onPreviewDataFetched,
+      onReactionPress,
+      onReadReceiptsPress,
       renderBubble,
       renderCustomMessage,
       renderFileMessage,
       renderImageMessage,
       renderTextMessage,
+      showReadReceipts,
       showUserAvatars,
       size.width,
       usePreviewData,
@@ -438,6 +451,9 @@ export const Chat = ({
                   style: keyboardAccessoryView,
                 }}
               >
+                {typingUsers.length > 0 && (
+                  <TypingIndicator typingUsers={typingUsers} />
+                )}
                 <Input
                   {...{
                     ...unwrap(inputProps),
