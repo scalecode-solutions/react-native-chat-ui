@@ -235,3 +235,5 @@ export const ReactionPicker = React.memo<ReactionPickerProps>(
 )
 
 ReactionPicker.displayName = 'ReactionPicker'
+
+ReactionPicker.displayName = 'ReactionPicker'

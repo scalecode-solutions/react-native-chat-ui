@@ -17,6 +17,8 @@ import {
   Text,
   View,
 } from 'react-native'
+
+const { useTransition } = React
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { usePrevious } from '../../hooks'
@@ -155,6 +157,9 @@ export const Chat = ({
   const [isNextPageLoading, setNextPageLoading] = React.useState(false)
   const [imageViewIndex, setImageViewIndex] = React.useState(0)
   const [stackEntry, setStackEntry] = React.useState<StatusBarProps>({})
+  
+  // React 18: Use transitions for non-blocking UI updates
+  const [isPending, startTransition] = useTransition()
 
   const l10nValue = React.useMemo(
     () => ({ ...l10n[locale], ...unwrap(l10nOverride) }),
@@ -375,12 +380,19 @@ export const Chat = ({
         ListFooterComponent={renderListFooterComponent}
         ListHeaderComponent={<View />}
         ListHeaderComponentStyle={header}
-        maxToRenderPerBatch={6}
+        maxToRenderPerBatch={10}
         onEndReachedThreshold={0.75}
         // Performance optimizations for better scrolling
         removeClippedSubviews={true}
-        windowSize={11}
+        windowSize={21}
         updateCellsBatchingPeriod={50}
+        initialNumToRender={15}
+        // Improve scroll performance with estimated heights
+        getItemLayout={(data, index) => ({
+          length: 100, // Estimated average message height
+          offset: 100 * index,
+          index,
+        })}
         style={flatList}
         showsVerticalScrollIndicator={false}
         {...unwrap(flatListProps)}

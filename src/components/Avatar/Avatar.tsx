@@ -76,3 +76,5 @@ const styles = StyleSheet.create({
     width: 40,
   },
 })
+
+Avatar.displayName = 'Avatar'

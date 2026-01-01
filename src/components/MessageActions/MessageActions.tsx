@@ -162,3 +162,5 @@ export const MessageActions = React.memo<MessageActionsProps>(
 )
 
 MessageActions.displayName = 'MessageActions'
+
+MessageActions.displayName = 'MessageActions'

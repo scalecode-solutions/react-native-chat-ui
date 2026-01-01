@@ -66,6 +66,8 @@ export const StatusIcon = React.memo(
   }
 )
 
+StatusIcon.displayName = 'StatusIcon'
+
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
