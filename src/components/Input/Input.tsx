@@ -56,13 +56,20 @@ export const Input = ({
 
   // Use `defaultValue` if provided
   const [text, setText] = React.useState(textInputProps?.defaultValue ?? '')
+  
+  // Use React 18's useTransition for non-blocking text updates
+  const [isPending, startTransition] = React.useTransition()
 
   const value = textInputProps?.value ?? text
 
   const handleChangeText = (newText: string) => {
-    // Track local state in case `onChangeText` is provided and `value` is not
+    // Update immediately for responsive typing
     setText(newText)
-    textInputProps?.onChangeText?.(newText)
+    
+    // Defer expensive operations (like re-renders) with startTransition
+    startTransition(() => {
+      textInputProps?.onChangeText?.(newText)
+    })
   }
 
   const handleSend = () => {

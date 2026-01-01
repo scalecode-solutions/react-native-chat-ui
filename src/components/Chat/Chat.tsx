@@ -161,12 +161,17 @@ export const Chat = ({
     [l10nOverride, locale]
   )
 
-  const { chatMessages, gallery } = calculateChatMessages(messages, user, {
-    customDateHeaderText,
-    dateFormat,
-    showUserNames,
-    timeFormat,
-  })
+  // Memoize expensive chat message calculations
+  const { chatMessages, gallery } = React.useMemo(
+    () =>
+      calculateChatMessages(messages, user, {
+        customDateHeaderText,
+        dateFormat,
+        showUserNames,
+        timeFormat,
+      }),
+    [messages, user, customDateHeaderText, dateFormat, showUserNames, timeFormat]
+  )
 
   const previousChatMessages = usePrevious(chatMessages)
 
@@ -372,6 +377,10 @@ export const Chat = ({
         ListHeaderComponentStyle={header}
         maxToRenderPerBatch={6}
         onEndReachedThreshold={0.75}
+        // Performance optimizations for better scrolling
+        removeClippedSubviews={true}
+        windowSize={11}
+        updateCellsBatchingPeriod={50}
         style={flatList}
         showsVerticalScrollIndicator={false}
         {...unwrap(flatListProps)}

@@ -2,15 +2,15 @@ import * as React from 'react'
 import {
   GestureResponderEvent,
   Image,
+  Pressable,
+  PressableProps,
   StyleSheet,
-  TouchableOpacity,
-  TouchableOpacityProps,
 } from 'react-native'
 
 import { L10nContext, ThemeContext } from '../../utils'
 
 export interface AttachmentButtonAdditionalProps {
-  touchableOpacityProps?: TouchableOpacityProps
+  pressableProps?: PressableProps
 }
 
 export interface AttachmentButtonProps extends AttachmentButtonAdditionalProps {
@@ -20,21 +20,21 @@ export interface AttachmentButtonProps extends AttachmentButtonAdditionalProps {
 
 export const AttachmentButton = ({
   onPress,
-  touchableOpacityProps,
+  pressableProps,
 }: AttachmentButtonProps) => {
   const l10n = React.useContext(L10nContext)
   const theme = React.useContext(ThemeContext)
 
   const handlePress = (event: GestureResponderEvent) => {
     onPress?.()
-    touchableOpacityProps?.onPress?.(event)
+    pressableProps?.onPress?.(event)
   }
 
   return (
-    <TouchableOpacity
+    <Pressable
       accessibilityLabel={l10n.attachmentButtonAccessibilityLabel}
       accessibilityRole='button'
-      {...touchableOpacityProps}
+      {...pressableProps}
       onPress={handlePress}
     >
       {theme.icons?.attachmentButtonIcon?.() ?? (
@@ -43,7 +43,7 @@ export const AttachmentButton = ({
           style={[styles.image, { tintColor: theme.colors.inputText }]}
         />
       )}
-    </TouchableOpacity>
+    </Pressable>
   )
 }
 

@@ -2,15 +2,15 @@ import * as React from 'react'
 import {
   GestureResponderEvent,
   Image,
+  Pressable,
+  PressableProps,
   StyleSheet,
-  TouchableOpacity,
-  TouchableOpacityProps,
 } from 'react-native'
 
 import { L10nContext, ThemeContext } from '../../utils'
 
 export interface SendButtonPropsAdditionalProps {
-  touchableOpacityProps?: TouchableOpacityProps
+  pressableProps?: PressableProps
 }
 
 export interface SendButtonProps extends SendButtonPropsAdditionalProps {
@@ -20,21 +20,21 @@ export interface SendButtonProps extends SendButtonPropsAdditionalProps {
 
 export const SendButton = ({
   onPress,
-  touchableOpacityProps,
+  pressableProps,
 }: SendButtonProps) => {
   const l10n = React.useContext(L10nContext)
   const theme = React.useContext(ThemeContext)
 
   const handlePress = (event: GestureResponderEvent) => {
     onPress()
-    touchableOpacityProps?.onPress?.(event)
+    pressableProps?.onPress?.(event)
   }
 
   return (
-    <TouchableOpacity
+    <Pressable
       accessibilityLabel={l10n.sendButtonAccessibilityLabel}
       accessibilityRole='button'
-      {...touchableOpacityProps}
+      {...pressableProps}
       onPress={handlePress}
       style={styles.sendButton}
     >
@@ -44,7 +44,7 @@ export const SendButton = ({
           style={{ tintColor: theme.colors.inputText }}
         />
       )}
-    </TouchableOpacity>
+    </Pressable>
   )
 }
 
