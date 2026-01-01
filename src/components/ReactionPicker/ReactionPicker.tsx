@@ -170,7 +170,11 @@ export const ReactionPicker = React.memo<ReactionPickerProps>(
         testID="reaction-picker-modal"
       >
         <Pressable style={styles.overlay} onPress={onDismiss}>
-          <Pressable style={styles.container} onPress={(e) => e.stopPropagation()}>
+          <Pressable
+            style={styles.container}
+            onPress={(e) => e.stopPropagation()}
+            testID="picker-container"
+          >
             {/* Quick Reactions */}
             <View style={styles.quickReactions}>
               {quickReactions.map((emoji) => (

@@ -320,6 +320,549 @@ To adopt new features:
 
 ---
 
+## Message Interactions
+
+### Message Reactions
+
+Add emoji reactions to messages with the `MessageReactions` component and `MessageReaction` type:
+
+```typescript
+import { Chat, MessageReaction } from '@flyerhq/react-native-chat-ui'
+import { useState } from 'react'
+
+function ChatWithReactions() {
+  const [messages, setMessages] = useState<MessageType.Any[]>([...])
+  
+  // Handle reaction tap - toggle user's reaction
+  const handleReactionPress = (message: MessageType.Any, emoji: string) => {
+    setMessages(prev =>
+      prev.map(msg => {
+        if (msg.id !== message.id) return msg
+        
+        const reactions = msg.metadata?.reactions || []
+        const userReacted = reactions.find(
+          r => r.emoji === emoji && r.userId === currentUser.id
+        )
+        
+        // Toggle reaction
+        const newReactions = userReacted
+          ? reactions.filter(
+              r => !(r.emoji === emoji && r.userId === currentUser.id)
+            )
+          : [...reactions, { emoji, userId: currentUser.id }]
+        
+        return {
+          ...msg,
+          metadata: { ...msg.metadata, reactions: newReactions }
+        }
+      })
+    )
+  }
+  
+  return (
+    <Chat
+      messages={messages}
+      onReactionPress={handleReactionPress}
+      user={currentUser}
+      {...otherProps}
+    />
+  )
+}
+```
+
+### Reaction Picker
+
+Use `ReactionPicker` to let users select emoji reactions:
+
+```typescript
+import { ReactionPicker } from '@flyerhq/react-native-chat-ui'
+import { useState } from 'react'
+
+function MessageWithReactions() {
+  const [pickerVisible, setPickerVisible] = useState(false)
+  const [selectedMessage, setSelectedMessage] = useState<MessageType.Any>()
+  
+  const handleMessageLongPress = (message: MessageType.Any) => {
+    setSelectedMessage(message)
+    setPickerVisible(true)
+  }
+  
+  const handleEmojiSelect = (emoji: string) => {
+    // Add reaction to selectedMessage
+    addReaction(selectedMessage, emoji)
+  }
+  
+  return (
+    <>
+      <Chat
+        messages={messages}
+        onMessageLongPress={handleMessageLongPress}
+        {...otherProps}
+      />
+      
+      <ReactionPicker
+        visible={pickerVisible}
+        onDismiss={() => setPickerVisible(false)}
+        onEmojiSelect={handleEmojiSelect}
+        customEmojis={['👍', '❤️', '😂', '🔥']} // Optional
+      />
+    </>
+  )
+}
+```
+
+### Message Actions Menu
+
+Use `MessageActions` for contextual actions (reply, edit, delete, etc.):
+
+```typescript
+import { MessageActions, MessageAction } from '@flyerhq/react-native-chat-ui'
+import { useState } from 'react'
+
+function ChatWithActions() {
+  const [actionsVisible, setActionsVisible] = useState(false)
+  const [selectedMessage, setSelectedMessage] = useState<MessageType.Any>()
+  
+  const handleMessageLongPress = (message: MessageType.Any) => {
+    setSelectedMessage(message)
+    setActionsVisible(true)
+  }
+  
+  const handleActionSelect = (actionId: string, message: MessageType.Any) => {
+    switch (actionId) {
+      case 'reply':
+        startReply(message)
+        break
+      case 'edit':
+        startEdit(message)
+        break
+      case 'delete':
+        deleteMessage(message.id)
+        break
+      case 'copy':
+        if (message.type === 'text') {
+          Clipboard.setString(message.text)
+        }
+        break
+      case 'react':
+        showReactionPicker(message)
+        break
+      case 'forward':
+        forwardMessage(message)
+        break
+    }
+  }
+  
+  // Custom actions
+  const customActions: MessageAction[] = [
+    {
+      id: 'pin',
+      label: 'Pin Message',
+      icon: '📌',
+      variant: 'default',
+      condition: (msg) => !msg.metadata?.isPinned
+    }
+  ]
+  
+  return (
+    <>
+      <Chat
+        messages={messages}
+        onMessageLongPress={handleMessageLongPress}
+        {...otherProps}
+      />
+      
+      <MessageActions
+        visible={actionsVisible}
+        message={selectedMessage!}
+        currentUserId={currentUser.id}
+        onDismiss={() => setActionsVisible(false)}
+        onActionSelect={handleActionSelect}
+        customActions={customActions}
+      />
+    </>
+  )
+}
+```
+
+### Reply to Messages
+
+Use `ReplyPreview` and `Input` props for message replies:
+
+```typescript
+import { Chat, Input, ReplyPreview, MessageReply } from '@flyerhq/react-native-chat-ui'
+import { useState } from 'react'
+
+function ChatWithReplies() {
+  const [activeReply, setActiveReply] = useState<MessageReply | null>(null)
+  
+  const handleActionSelect = (actionId: string, message: MessageType.Any) => {
+    if (actionId === 'reply') {
+      setActiveReply({
+        messageId: message.id,
+        messagePreview: message.type === 'text' ? message.text : 'Media message'
+      })
+    }
+  }
+  
+  const handleSendPress = (partialText: MessageType.PartialText) => {
+    const newMessage: MessageType.Text = {
+      ...partialText,
+      id: generateId(),
+      author: currentUser,
+      createdAt: Date.now(),
+      metadata: activeReply
+        ? { replyTo: activeReply }
+        : undefined
+    }
+    
+    setMessages([newMessage, ...messages])
+    setActiveReply(null)
+  }
+  
+  // Display reply context above messages
+  const renderBubble = ({ child, message }) => {
+    if (message.metadata?.replyTo) {
+      const originalMessage = messages.find(
+        m => m.id === message.metadata.replyTo.messageId
+      )
+      
+      return (
+        <View>
+          <ReplyPreview
+            reply={message.metadata.replyTo}
+            author={originalMessage?.author}
+            variant="message"
+            onReplyPress={(id) => scrollToMessage(id)}
+          />
+          {child}
+        </View>
+      )
+    }
+    
+    return child
+  }
+  
+  return (
+    <View style={{ flex: 1 }}>
+      <Chat
+        messages={messages}
+        renderBubble={renderBubble}
+        {...otherProps}
+      />
+      
+      <Input
+        onSendPress={handleSendPress}
+        activeReply={activeReply}
+        onDismissReply={() => setActiveReply(null)}
+      />
+    </View>
+  )
+}
+```
+
+### Edit Messages
+
+Use `Input` with editing mode:
+
+```typescript
+import { Chat, Input } from '@flyerhq/react-native-chat-ui'
+import { useState } from 'react'
+
+function ChatWithEditing() {
+  const [editingMessage, setEditingMessage] = useState<MessageType.Text | null>(null)
+  
+  const handleActionSelect = (actionId: string, message: MessageType.Any) => {
+    if (actionId === 'edit' && message.type === 'text') {
+      setEditingMessage(message)
+    }
+  }
+  
+  const handleSendPress = (partialText: MessageType.PartialText) => {
+    if (editingMessage) {
+      // Update existing message
+      setMessages(prev =>
+        prev.map(msg =>
+          msg.id === editingMessage.id
+            ? {
+                ...msg,
+                text: partialText.text,
+                metadata: {
+                  ...msg.metadata,
+                  editedAt: Date.now()
+                }
+              }
+            : msg
+        )
+      )
+      setEditingMessage(null)
+    } else {
+      // Create new message
+      const newMessage = {
+        ...partialText,
+        id: generateId(),
+        author: currentUser,
+        createdAt: Date.now()
+      }
+      setMessages([newMessage, ...messages])
+    }
+  }
+  
+  return (
+    <View style={{ flex: 1 }}>
+      <Chat
+        messages={messages}
+        onMessageLongPress={handleMessageLongPress}
+        {...otherProps}
+      />
+      
+      <Input
+        onSendPress={handleSendPress}
+        editingMessage={editingMessage}
+        onCancelEdit={() => setEditingMessage(null)}
+      />
+    </View>
+  )
+}
+```
+
+---
+
+## Extended Message Metadata
+
+Use the `ExtendedMetadata` type for rich message features:
+
+```typescript
+interface ExtendedMetadata {
+  reactions?: MessageReaction[]     // Emoji reactions
+  replyTo?: MessageReply            // Reply context
+  isPinned?: boolean                // Pinned message
+  flags?: string[]                  // Moderation flags
+  editedAt?: number                 // Edit timestamp
+  forwardedFrom?: {                 // Forward info
+    authorId: string
+    authorName: string
+    originalMessageId: string
+  }
+}
+
+// Example message with extended metadata
+const richMessage: MessageType.Text = {
+  id: 'msg-1',
+  type: 'text',
+  text: 'Hello!',
+  author: currentUser,
+  createdAt: Date.now(),
+  metadata: {
+    reactions: [
+      { emoji: '👍', userId: 'user1' },
+      { emoji: '❤️', userId: 'user2' }
+    ],
+    replyTo: {
+      messageId: 'msg-0',
+      messagePreview: 'Previous message'
+    },
+    isPinned: true,
+    editedAt: Date.now()
+  }
+}
+```
+
+---
+
+## Complete Integration Example
+
+Here's a full example combining all interaction features:
+
+```typescript
+import {
+  Chat,
+  Input,
+  MessageActions,
+  ReactionPicker,
+  ReplyPreview,
+  useChatState,
+  useChatEvents
+} from '@flyerhq/react-native-chat-ui'
+import { useState } from 'react'
+import { View } from 'react-native'
+
+function AdvancedChat() {
+  const [messages, setMessages] = useChatState<MessageType.Any[]>([])
+  const { emit, on } = useChatEvents()
+  
+  const [actionsVisible, setActionsVisible] = useState(false)
+  const [pickerVisible, setPickerVisible] = useState(false)
+  const [selectedMessage, setSelectedMessage] = useState<MessageType.Any>()
+  const [activeReply, setActiveReply] = useState<MessageReply | null>(null)
+  const [editingMessage, setEditingMessage] = useState<MessageType.Text | null>(null)
+  
+  // Handle long press
+  const handleMessageLongPress = (message: MessageType.Any) => {
+    setSelectedMessage(message)
+    setActionsVisible(true)
+  }
+  
+  // Handle actions
+  const handleActionSelect = (actionId: string, message: MessageType.Any) => {
+    switch (actionId) {
+      case 'react':
+        setPickerVisible(true)
+        break
+      case 'reply':
+        setActiveReply({
+          messageId: message.id,
+          messagePreview: message.type === 'text' ? message.text : 'Media'
+        })
+        break
+      case 'edit':
+        if (message.type === 'text') {
+          setEditingMessage(message)
+        }
+        break
+      case 'delete':
+        setMessages(prev => prev.filter(m => m.id !== message.id))
+        break
+    }
+  }
+  
+  // Handle reactions
+  const handleReactionPress = (message: MessageType.Any, emoji: string) => {
+    setMessages(prev =>
+      prev.map(msg => {
+        if (msg.id !== message.id) return msg
+        
+        const reactions = msg.metadata?.reactions || []
+        const hasReacted = reactions.find(
+          r => r.emoji === emoji && r.userId === currentUser.id
+        )
+        
+        return {
+          ...msg,
+          metadata: {
+            ...msg.metadata,
+            reactions: hasReacted
+              ? reactions.filter(
+                  r => !(r.emoji === emoji && r.userId === currentUser.id)
+                )
+              : [...reactions, { emoji, userId: currentUser.id }]
+          }
+        }
+      })
+    )
+  }
+  
+  const handleEmojiSelect = (emoji: string) => {
+    if (selectedMessage) {
+      handleReactionPress(selectedMessage, emoji)
+    }
+  }
+  
+  // Handle send
+  const handleSendPress = (partialText: MessageType.PartialText) => {
+    if (editingMessage) {
+      // Update existing
+      setMessages(prev =>
+        prev.map(msg =>
+          msg.id === editingMessage.id
+            ? { ...msg, text: partialText.text, metadata: { ...msg.metadata, editedAt: Date.now() } }
+            : msg
+        )
+      )
+      setEditingMessage(null)
+    } else {
+      // Create new
+      const newMessage: MessageType.Text = {
+        ...partialText,
+        id: generateId(),
+        author: currentUser,
+        createdAt: Date.now(),
+        metadata: activeReply ? { replyTo: activeReply } : undefined
+      }
+      setMessages([newMessage, ...messages])
+      setActiveReply(null)
+      emit('messageSent', newMessage)
+    }
+  }
+  
+  // Render reply context
+  const renderBubble = ({ child, message }) => {
+    if (message.metadata?.replyTo) {
+      const original = messages.find(m => m.id === message.metadata.replyTo.messageId)
+      return (
+        <View>
+          <ReplyPreview
+            reply={message.metadata.replyTo}
+            author={original?.author}
+            variant="message"
+          />
+          {child}
+        </View>
+      )
+    }
+    return child
+  }
+  
+  return (
+    <View style={{ flex: 1 }}>
+      <Chat
+        messages={messages}
+        user={currentUser}
+        onMessageLongPress={handleMessageLongPress}
+        onReactionPress={handleReactionPress}
+        renderBubble={renderBubble}
+        {...otherProps}
+      />
+      
+      <Input
+        onSendPress={handleSendPress}
+        activeReply={activeReply}
+        onDismissReply={() => setActiveReply(null)}
+        editingMessage={editingMessage}
+        onCancelEdit={() => setEditingMessage(null)}
+      />
+      
+      <MessageActions
+        visible={actionsVisible}
+        message={selectedMessage!}
+        currentUserId={currentUser.id}
+        onDismiss={() => setActionsVisible(false)}
+        onActionSelect={handleActionSelect}
+      />
+      
+      <ReactionPicker
+        visible={pickerVisible}
+        onDismiss={() => setPickerVisible(false)}
+        onEmojiSelect={handleEmojiSelect}
+      />
+    </View>
+  )
+}
+```
+
+---
+
+## Best Practices
+
+1. **Performance**: Use React 18 features (useTransition, useDeferredValue) for smooth UX
+2. **State Management**: Consider using `useChatState` for non-blocking updates
+3. **Events**: Use event system for loose coupling between components
+4. **Error Handling**: Wrap in ErrorBoundary for graceful failures
+5. **Accessibility**: All interaction components include proper testIDs
+6. **Extensibility**: Use metadata field for custom features without modifying types
+
+---
+
+## Performance Tips
+
+- Reactions are grouped and sorted by count automatically
+- ReplyPreview truncates long messages for performance
+- MessageActions filters actions client-side based on ownership
+- Use `maxReactionsToShow` prop to limit visible reactions
+- Reactions display "+N more" indicator for additional reactions
+
+---
+
 ## Examples
 
 See the `/example` app for complete working examples of all advanced features.
