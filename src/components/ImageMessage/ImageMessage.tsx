@@ -64,6 +64,7 @@ export const ImageMessage = ({ message, messageWidth }: ImageMessageProps) => {
             ? verticalImage
             : horizontalImage
         }
+        testID='MessageImage'
       />
     )
   }

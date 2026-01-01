@@ -35,6 +35,7 @@ export const Avatar = React.memo(
               styles.image,
               { backgroundColor: theme.colors.userAvatarImageBackground },
             ]}
+            testID='AvatarImage'
           />
         )
       }

@@ -20,7 +20,7 @@ describe('message', () => {
     )
     const ContentContainer = getByTestId('ContentContainer')
     expect(ContentContainer).toBeDefined()
-    expect(ContentContainer).toHaveProperty('props.children[0]', undefined)
+    expect(ContentContainer.props.children).toBeNull()
   })
 
   it('renders undefined in ContentContainer with wrong message type', () => {
@@ -38,6 +38,6 @@ describe('message', () => {
     )
     const ContentContainer = getByTestId('ContentContainer')
     expect(ContentContainer).toBeDefined()
-    expect(ContentContainer).toHaveProperty('props.children[0]', undefined)
+    expect(ContentContainer.props.children).toBeNull()
   })
 })

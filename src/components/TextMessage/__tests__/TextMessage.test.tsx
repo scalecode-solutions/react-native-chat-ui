@@ -1,7 +1,7 @@
 import * as utils from '@flyerhq/react-native-link-preview/lib/utils'
 import { fireEvent, render, waitFor } from '@testing-library/react-native'
 import * as React from 'react'
-import { Linking } from 'react-native'
+import { Image, Linking } from 'react-native'
 
 import { derivedTextMessage } from '../../../../jest/fixtures'
 import { TextMessage } from '../TextMessage'
@@ -23,7 +23,7 @@ describe('text message', () => {
         title: 'title',
       })
     const openUrlMock = jest.spyOn(Linking, 'openURL')
-    const { getByRole, getByText } = render(
+    const { UNSAFE_getByType, getByText } = render(
       <TextMessage
         message={{
           ...derivedTextMessage,
@@ -36,8 +36,8 @@ describe('text message', () => {
         usePreviewData
       />
     )
-    await waitFor(() => getByRole('image'))
-    const image = getByRole('image')
+    await waitFor(() => UNSAFE_getByType(Image))
+    const image = UNSAFE_getByType(Image)
     expect(image).toBeDefined()
     const text = getByText(link)
     fireEvent.press(text)
@@ -62,7 +62,7 @@ describe('text message', () => {
         title: 'title',
       })
     const openUrlMock = jest.spyOn(Linking, 'openURL')
-    const { getByRole, getByText } = render(
+    const { UNSAFE_getByType, getByText } = render(
       <TextMessage
         message={{ ...derivedTextMessage, text: link }}
         messageWidth={440}
@@ -71,8 +71,8 @@ describe('text message', () => {
         usePreviewData
       />
     )
-    await waitFor(() => getByRole('image'))
-    const image = getByRole('image')
+    await waitFor(() => UNSAFE_getByType(Image))
+    const image = UNSAFE_getByType(Image)
     expect(image).toBeDefined()
     const text = getByText(link)
     fireEvent.press(text)

@@ -38,7 +38,7 @@ describe('avatar', () => {
   it('should render image background', () => {
     expect.assertions(2)
     const imageUrl = 'https://avatars.githubusercontent.com/u/14123304?v=4'
-    const { getAllByRole } = render(
+    const { getByTestId } = render(
       <Avatar
         author={{
           ...user,
@@ -50,8 +50,8 @@ describe('avatar', () => {
         theme={defaultTheme}
       />
     )
-    const image = getAllByRole('image')
+    const image = getByTestId('AvatarImage')
     expect(image).toBeDefined()
-    expect(image[0]).toHaveProperty('props.source.uri', imageUrl)
+    expect(image).toHaveProperty('props.source.uri', imageUrl)
   })
 })

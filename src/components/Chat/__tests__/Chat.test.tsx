@@ -1,6 +1,6 @@
 import { fireEvent, render } from '@testing-library/react-native'
 import * as React from 'react'
-import { Text } from 'react-native'
+import { Image, Text } from 'react-native'
 
 import {
   fileMessage,
@@ -27,10 +27,10 @@ describe('chat', () => {
       },
     ]
     const onSendPress = jest.fn()
-    const { getByRole, getByText } = render(
+    const { getByTestId, getByText } = render(
       <Chat messages={messages} onSendPress={onSendPress} user={user} />
     )
-    const button = getByRole('image').parent
+    const button = getByTestId('MessageImage').parent
     fireEvent.press(button)
     const closeButton = getByText('✕')
     expect(closeButton).toBeDefined()

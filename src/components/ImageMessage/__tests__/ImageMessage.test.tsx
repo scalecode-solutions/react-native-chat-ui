@@ -15,7 +15,7 @@ describe('image message', () => {
       height: undefined,
       width: undefined,
     }
-    const { getByRole } = render(
+    const { getByTestId } = render(
       <ImageMessage message={message} messageWidth={440} />
     )
     expect(getSizeMock).toHaveBeenCalledTimes(1)
@@ -26,12 +26,12 @@ describe('image message', () => {
     act(() => {
       success(size.width, size.height)
     })
-    const successImageComponent = getByRole('image')
+    const successImageComponent = getByTestId('MessageImage')
     expect(successImageComponent.props).toHaveProperty('style.height', 440)
     act(() => {
       success(size.width, size.width * 10 + 1)
     })
-    const successMinimizedImageComponent = getByRole('image')
+    const successMinimizedImageComponent = getByTestId('MessageImage')
     expect(successMinimizedImageComponent.props).toHaveProperty(
       'style.width',
       64
@@ -39,7 +39,7 @@ describe('image message', () => {
     act(() => {
       error(new Error())
     })
-    const errorImageComponent = getByRole('image')
+    const errorImageComponent = getByTestId('MessageImage')
     expect(errorImageComponent.props).toHaveProperty('style.width', 64)
     getSizeMock.mockRestore()
   })
