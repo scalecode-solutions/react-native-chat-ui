@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { TextInput, TextInputProps, View } from 'react-native'
 
-import { MessageType } from '../../types'
+import { MessageType, MessageReply } from '../../types'
 import { L10nContext, ThemeContext, unwrap, UserContext } from '../../utils'
 import {
   AttachmentButton,
@@ -11,6 +11,7 @@ import {
   CircularActivityIndicator,
   CircularActivityIndicatorProps,
 } from '../CircularActivityIndicator'
+import { ReplyPreview } from '../ReplyPreview'
 import { SendButton } from '../SendButton'
 import styles from './styles'
 
@@ -29,6 +30,14 @@ export interface InputTopLevelProps {
    * `TextInput` state. Defaults to `editing`. */
   sendButtonVisibilityMode?: 'always' | 'editing'
   textInputProps?: TextInputProps
+  /** Active reply to show above input */
+  activeReply?: MessageReply | null
+  /** Callback to dismiss/cancel reply */
+  onDismissReply?: () => void
+  /** Active message being edited */
+  editingMessage?: MessageType.Text | null
+  /** Callback to cancel editing */
+  onCancelEdit?: () => void
 }
 
 export interface InputAdditionalProps {
@@ -48,14 +57,28 @@ export const Input = ({
   onSendPress,
   sendButtonVisibilityMode,
   textInputProps,
+  activeReply,
+  onDismissReply,
+  editingMessage,
+  onCancelEdit,
 }: InputProps) => {
   const l10n = React.useContext(L10nContext)
   const theme = React.useContext(ThemeContext)
   const user = React.useContext(UserContext)
-  const { container, input, marginRight } = styles({ theme })
+  const { container, input, marginRight, wrapper } = styles({ theme })
 
-  // Use `defaultValue` if provided
-  const [text, setText] = React.useState(textInputProps?.defaultValue ?? '')
+  // Use editing message text if available, otherwise use defaultValue
+  const initialText = editingMessage?.text ?? textInputProps?.defaultValue ?? ''
+  const [text, setText] = React.useState(initialText)
+  
+  // Update text when editingMessage changes
+  React.useEffect(() => {
+    if (editingMessage) {
+      setText(editingMessage.text)
+    } else if (!activeReply) {
+      setText(textInputProps?.defaultValue ?? '')
+    }
+  }, [editingMessage, activeReply, textInputProps?.defaultValue])
   
   // Use React 18's useTransition for non-blocking text updates
   const [isPending, startTransition] = React.useTransition()
@@ -81,11 +104,39 @@ export const Input = ({
     if (trimmedValue) {
       onSendPress({ text: trimmedValue, type: 'text' })
       setText('')
+      
+      // Clear editing state if in edit mode
+      if (editingMessage && onCancelEdit) {
+        onCancelEdit()
+      }
     }
   }
 
   return (
-    <View style={container}>
+    <View style={wrapper}>
+      {/* Reply Preview */}
+      {activeReply && !editingMessage && (
+        <ReplyPreview
+          reply={activeReply}
+          variant="input"
+          onDismiss={onDismissReply}
+        />
+      )}
+      
+      {/* Edit Preview */}
+      {editingMessage && (
+        <ReplyPreview
+          reply={{
+            messageId: editingMessage.id,
+            messagePreview: editingMessage.text,
+          }}
+          author={editingMessage.author}
+          variant="input"
+          onDismiss={onCancelEdit}
+        />
+      )}
+      
+      <View style={container}>
       {user &&
         (isAttachmentUploading ? (
           <CircularActivityIndicator
@@ -118,6 +169,7 @@ export const Input = ({
       (sendButtonVisibilityMode === 'editing' && user && value.trim()) ? (
         <SendButton onPress={handleSend} />
       ) : null}
+      </View>
     </View>
   )
 }

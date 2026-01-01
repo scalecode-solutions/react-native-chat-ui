@@ -4,6 +4,9 @@ import { Theme } from '../../types'
 
 export default ({ theme }: { theme: Theme }) =>
   StyleSheet.create({
+    wrapper: {
+      backgroundColor: theme.colors.background,
+    },
     container: {
       alignItems: 'center',
       flexDirection: 'row',
