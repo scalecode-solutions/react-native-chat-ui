@@ -48,11 +48,18 @@ Flyer Chat is a platform for creating in-app chat experiences using React Native
 
 * **Minimum dependencies**. Our packages are lightweight. Use your favourite packages for selecting images, opening files etc. See the [example](https://github.com/scalecode-solutions/react-native-chat-ui/blob/main/example/src/App.tsx) for possible implementation.
 
+* **New Architecture Ready**. Fully compatible with React Native's New Architecture (Fabric renderer and TurboModules). The library is pure JavaScript with no native modules, ensuring seamless operation on both old and new architectures.
+
 ## Getting Started
 
 ### Requirements
 
-`React Native >=0.60.0`
+- React Native >= 0.76.0
+- React >= 18.3.0
+- iOS >= 15.1
+- Android >= API 21
+
+**New Architecture Support**: This library is fully compatible with React Native's New Architecture (Fabric and TurboModules). Enable it in your app following [React Native's official guide](https://reactnative.dev/docs/new-architecture-intro).
 
 Read our [documentation](https://docs.flyer.chat/react-native/chat-ui) or see the [example](https://github.com/scalecode-solutions/react-native-chat-ui/tree/main/example) project.
 
