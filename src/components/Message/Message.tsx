@@ -11,6 +11,7 @@ import {
 import { Avatar } from '../Avatar'
 import { FileMessage } from '../FileMessage'
 import { ImageMessage } from '../ImageMessage'
+import { MessageReactions } from '../MessageReactions'
 import { StatusIcon } from '../StatusIcon'
 import { TextMessage, TextMessageTopLevelProps } from '../TextMessage'
 import styles from './styles'
@@ -20,6 +21,8 @@ export interface MessageTopLevelProps extends TextMessageTopLevelProps {
   onMessageLongPress?: (message: MessageType.Any) => void
   /** Called when user taps on any message */
   onMessagePress?: (message: MessageType.Any) => void
+  /** Called when user taps on a reaction */
+  onReactionPress?: (message: MessageType.Any, emoji: string) => void
   /** Customize the default bubble using this function. `child` is a content
    * you should render inside your bubble, `message` is a current message
    * (contains `author` inside) and `nextMessageInGroup` allows you to see
@@ -76,6 +79,7 @@ export const Message = React.memo(
     onMessagePress,
     onMessageLongPress,
     onPreviewDataFetched,
+    onReactionPress,
     renderBubble,
     renderCustomMessage,
     renderFileMessage,
@@ -191,15 +195,26 @@ export const Message = React.memo(
             theme,
           }}
         />
-        <Pressable
-          onLongPress={() =>
-            onMessageLongPress?.(excludeDerivedMessageProps(message))
-          }
-          onPress={() => onMessagePress?.(excludeDerivedMessageProps(message))}
-          style={pressable}
-        >
-          {renderBubbleContainer()}
-        </Pressable>
+        <View>
+          <Pressable
+            onLongPress={() =>
+              onMessageLongPress?.(excludeDerivedMessageProps(message))
+            }
+            onPress={() => onMessagePress?.(excludeDerivedMessageProps(message))}
+            style={pressable}
+          >
+            {renderBubbleContainer()}
+          </Pressable>
+          {message.metadata?.reactions && message.metadata.reactions.length > 0 && (
+            <MessageReactions
+              reactions={message.metadata.reactions}
+              currentUserId={user?.id}
+              onReactionPress={(emoji) =>
+                onReactionPress?.(excludeDerivedMessageProps(message), emoji)
+              }
+            />
+          )}
+        </View>
         <StatusIcon
           {...{
             currentUserIsAuthor,

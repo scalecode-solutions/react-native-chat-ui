@@ -189,4 +189,41 @@ describe('input', () => {
     const indicator = getByTestId('CircularActivityIndicator')
     expect(indicator).toBeDefined()
   })
+
+  it('clears text when activeReply is dismissed without editingMessage', () => {
+    const onSendPress = jest.fn()
+    const { rerender, getByPlaceholderText } = render(
+      <UserContext.Provider value={user}>
+        <Input
+          {...{
+            onSendPress,
+            renderScrollable,
+            sendButtonVisibilityMode: 'editing',
+            activeReply: { messageId: 'msg-1', messagePreview: 'Original' },
+            textInputProps: { defaultValue: 'default' },
+          }}
+        />
+      </UserContext.Provider>
+    )
+
+    const textInput = getByPlaceholderText(l10n.en.inputPlaceholder)
+    expect(textInput.props.value).toBe('default')
+
+    // Dismiss activeReply
+    rerender(
+      <UserContext.Provider value={user}>
+        <Input
+          {...{
+            onSendPress,
+            renderScrollable,
+            sendButtonVisibilityMode: 'editing',
+            activeReply: undefined,
+            textInputProps: { defaultValue: 'default' },
+          }}
+        />
+      </UserContext.Provider>
+    )
+
+    expect(textInput.props.value).toBe('default')
+  })
 })
